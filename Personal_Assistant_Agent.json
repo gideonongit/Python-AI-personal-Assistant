@@ -1,0 +1,622 @@
+{
+  "name": "Personal Assistant Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5789c5a8-524d-41ff-a89e-490dd457a126",
+      "name": "Telegram Trigger",
+      "webhookId": "513ef2d4-bb52-4db8-830b-bae34a622e35",
+      "credentials": {
+        "telegramApi": {
+          "id": "DSDG5eaGlnOCFXUM",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "fc9325d9-8014-47e1-bea4-180615b39b5b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "167164ba-a8e2-44a8-9b10-6c9f5ea39937",
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "3ec0e239-57ad-4fc6-9ac5-743cd18b5b52",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b245eeb-5726-4968-b443-3d0c462ff181",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        520,
+        -100
+      ],
+      "id": "ddb8b6d7-12f4-4559-9c74-1f969f4bb083",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        100
+      ],
+      "id": "e8c69395-f1b5-4439-9858-5a83c848db30",
+      "name": "Telegram",
+      "webhookId": "09206229-2021-469f-bfa8-fcbd2d1501fc",
+      "credentials": {
+        "telegramApi": {
+          "id": "DSDG5eaGlnOCFXUM",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        200
+      ],
+      "id": "af9dd22a-2d4e-48bd-ab94-01e10bab7681",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TGxfkx7bKzIoNwCW",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": "={{ fals$json.outpute }}",
+        "filters": {
+          "labelIds": "={{ [\"INBOX\",\"UNREAD\"] }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1320,
+        200
+      ],
+      "id": "de3c3f37-49e2-400c-9fe1-6c084563c0b3",
+      "name": "Gmail",
+      "webhookId": "d3501c27-c8ae-4944-8562-452dcd2d8131",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3ymzWjc6TCXmw9zq",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "You are Gideon's personal AI agent designed to assist with email management, calendar scheduling, weather updates, and outfit suggestions. Act as a proactive, friendly, and efficient assistant. Always take into account:\n- The local weather before suggesting trail runs or outfits.\n- The user's availability from their calendar before proposing new events.\n- The user’s current unread emails and respond or summarize when prompted.\n- Your tone should be intelligent, conversational, and slightly energetic.\n- Be able to send emails \n- Gideon's email account is gideondavidas123@gmail.com\n\nYour core goal is to make the user’s daily trail running experience seamless and weather-smart.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -20
+      ],
+      "id": "bd447f9e-4cd2-4d2c-9d59-43b84022da3f",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Switch').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "replyMarkup": "={{ $('Switch').item.json.message.from.id }}",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "appendAttribution": "={{ $('Switch').item.json.message.from.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1460,
+        -20
+      ],
+      "id": "10bd1d00-443a-47a2-a742-f90985ee5daa",
+      "name": "Telegram1",
+      "webhookId": "40ec8bb2-f55b-4911-ad02-45e4ba84605e",
+      "credentials": {
+        "telegramApi": {
+          "id": "DSDG5eaGlnOCFXUM",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "gideondavidas123@gmail.com",
+          "mode": "list",
+          "cachedResultName": "gideondavidas123@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1560,
+        200
+      ],
+      "id": "35134d70-5a39-4ab9-97e9-20a56a9ba5be",
+      "name": "Calendar read",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "uphDDXoGpsJJoHPa",
+          "name": "Google Calendar account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $fromAI(\"to\", \"raw email address to the recipient\")}}",
+        "subject": "={{ $fromAI(\"subject\", \"a clear and concise subject line\")}}",
+        "emailType": "text",
+        "message": "={{ $fromAI(\"body\", \"the body of the email itself\")}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        200
+      ],
+      "id": "656b15ce-f1ff-417f-953f-07ed4923d3ba",
+      "name": "sending emails",
+      "webhookId": "3c735f40-fe7a-4f4c-848b-2a907be99fee",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3ymzWjc6TCXmw9zq",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "gideondavidas123@gmail.com",
+          "mode": "list",
+          "cachedResultName": "gideondavidas123@gmail.com"
+        },
+        "start": "={{ $now }}\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1700,
+        200
+      ],
+      "id": "89e3ec25-cb8c-46f2-8a6a-24e19d3878bf",
+      "name": "create events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "7SyjExU4rvr2YnvL",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        640,
+        320
+      ],
+      "id": "01919056-c2c8-4638-aaa1-7a977f43e884",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "0YKQZdoZ07LdGpmj",
+          "name": "OpenAi account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "format": "imperial",
+        "cityName": "Ongata Rongai,Kenya"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        200
+      ],
+      "id": "0485d458-63a6-405f-b59a-944a01cd119a",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "6yMRx89WsNpbK6QJ",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request and returns the response data from goojara",
+        "url": "https://ww1.goojara.to/",
+        "options": {},
+        "optimizeResponse": true
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        200
+      ],
+      "id": "c0468e44-71ad-4bed-8f52-f25be25d8511",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "You are Gideon's personal AI agent designed to assist with email management, calendar scheduling, weather updates, and outfit suggestions. Act as a proactive, friendly, and efficient assistant. Always take into account: - The local weather before suggesting trail runs or outfits. - The user's availability from their calendar before proposing new events. - The user’s current unread emails and respond or summarize when prompted. - Your tone should be intelligent, conversational, and slightly energetic.  Your core goal is to make the user’s daily trail running experience seamless and weather-smart.",
+        "contextWindowLength": 12
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1200,
+        200
+      ],
+      "id": "3179daf9-2910-4370-9081-95320ea627bc",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        700,
+        60
+      ],
+      "id": "1f4ea71d-b239-4525-8c63-e7ac55059c22",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TGxfkx7bKzIoNwCW",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        400,
+        320
+      ],
+      "id": "8b2bcfd4-1fbb-4051-8413-231b5ec219e4",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "WHSaguYZRQAsKC3A",
+          "name": "Google Service Account account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "driveId": "=myDrive",
+        "folderId": "=",
+        "title": "={{ $('Switch').item.json.message.from.id }}"
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        2120,
+        200
+      ],
+      "id": "cc0c7647-a625-46b4-8b47-f3a9f30d7e81",
+      "name": "Google Docs",
+      "credentials": {
+        "googleApi": {
+          "id": "WHSaguYZRQAsKC3A",
+          "name": "Google Service Account account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar read": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sending emails": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "Google Docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "436f8ebd-ed7c-4183-aaff-2123dc4bbfd6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0be89061afc167e16db165999ab4162f73673e1c28397b34fc1153f69b315630"
+  },
+  "id": "jBOr0hzfAlGfHxpw",
+  "tags": []
+}
